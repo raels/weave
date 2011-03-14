@@ -1,6 +1,74 @@
 = weave
 
-Description goes here.
+I was working on a problem where I had a directory with several files in it, and some code that did various things based on the current state of that directory at any time.  First, I had to determine the state, which was the result of various events occurring in the directory,
+such as creating a file, editing the file, commiting it to source control, etc.
+
+To facilitate the test, I needed to generate all the possible states of the files in the directory from the point of view of the directory.
+That is, if I had two files (X and Y), each of which could be created, edited, then deleted (represented as c,e, and d), then I wanted to take the individual changes [Xc, Xe, Wd] and [Yc, Ye, Yd] and show every possible way that these could ordered collectively, which is
+
+	[
+	 ["Xc", "Xe", "Xd", "Yc", "Ye", "Yd"],
+	 ["Xc", "Xe", "Yc", "Ye", "Yd", "Xd"],
+	 ["Xc", "Xe", "Yc", "Ye", "Xd", "Yd"],
+	 ["Xc", "Xe", "Yc", "Xd", "Ye", "Yd"],
+	 ["Xc", "Yc", "Ye", "Yd", "Xe", "Xd"],
+	 ["Xc", "Yc", "Ye", "Xe", "Xd", "Yd"],
+	 ["Xc", "Yc", "Ye", "Xe", "Yd", "Xd"],
+	 ["Xc", "Yc", "Xe", "Xd", "Ye", "Yd"],
+	 ["Xc", "Yc", "Xe", "Ye", "Yd", "Xd"],
+	 ["Xc", "Yc", "Xe", "Ye", "Xd", "Yd"],
+	 ["Yc", "Ye", "Yd", "Xc", "Xe", "Xd"],
+	 ["Yc", "Ye", "Xc", "Xe", "Xd", "Yd"],
+	 ["Yc", "Ye", "Xc", "Xe", "Yd", "Xd"],
+	 ["Yc", "Ye", "Xc", "Yd", "Xe", "Xd"],
+	 ["Yc", "Xc", "Xe", "Xd", "Ye", "Yd"],
+	 ["Yc", "Xc", "Xe", "Ye", "Yd", "Xd"],
+	 ["Yc", "Xc", "Xe", "Ye", "Xd", "Yd"],
+	 ["Yc", "Xc", "Ye", "Yd", "Xe", "Xd"],
+	 ["Yc", "Xc", "Ye", "Xe", "Xd", "Yd"],
+	 ["Yc", "Xc", "Ye", "Xe", "Yd", "Xd"]
+	]
+
+So, the important thing to note is that the order of the sequences for the original file is preserved in the composition of the 
+sequences.  If you subtract the events for file Y from any of the composed sequences, it will be the sequences for X.  Note that this
+is not true if the sequences happen to share an element.  In this case, there is no problem, since the events are all unique.
+
+This was trickier to do than I first thought, but after some thought, turned out to be a single simple method and a helper method.  
+
+Of course, a directory can have more than two files, so this method handles that case.
+
+There are other areas where this operation is important, such as looking at the ways of composing the possible event sequences in
+transactional systems like databases, etc.  
+
+So, the Weave module provides a simple method to do this in Ruby.
+
+	require 'pp'
+	require 'weave'
+	include Weave
+
+	set1 = %w(Xa Xb Xc)
+	set2 = %w(Ya Yb Yc)
+
+	result = weave(set1, set2)
+
+	pp result
+
+	seta = [1,2]
+	setb = [3,4]
+	setc = [5,6]
+
+	pp weave(seta, setb, setc)
+
+In addition, you can filter each composed sequence through a block.  For instance, each composition in the result set can b reversed
+using the following...
+
+	result = weave(set1,set2) { |c| c.rev }
+
+The weave operation should work on ony kind of objects included in your arrays.  That said, the tests include tests on strings only.
+
+If two sets have elements in common, their composition will have them repeated in the result.  You may not be able to tell them apart,
+depending on how <=> is defined for them.
+
 
 == Contributing to weave
  
@@ -14,6 +82,5 @@ Description goes here.
 
 == Copyright
 
-Copyright (c) 2011 Raels Koder. See LICENSE.txt for
-further details.
+Copyright (c) 2011 OneHandApps. See LICENSE.txt for further details.
 
