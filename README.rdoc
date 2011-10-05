@@ -82,5 +82,5 @@ depending on how <=> is defined for them.
 
 == Copyright
 
-Copyright (c) 2011 OneHandApps. See LICENSE.txt for further details.
+Copyright (c) 2011 One Hand Apps. See LICENSE.txt for further details.
 
